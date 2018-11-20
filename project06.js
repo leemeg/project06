@@ -14,9 +14,17 @@ let continueResponse;
 let action, servAmount, client;
 let id = 0, firstName = 1, lastName = 2, totalSpent = 3;
 let clients = [], clientsWeekly = [], rewardClients = [];
+let services = [];
+services[0] = ["Hair cut",50];
+services[1] = ["Shampoo",35];
+services[2] = ["Manicure",65];
+services[3] = ["Pedicure",75];
+services[4] = ["Perm",100];
+services[5] = ["Massage",130];
 
 function main(){
     loadClients();
+
     if (continueResponse !== 0 && continueResponse !== 1) {
         setContinueResponse();
     }
@@ -24,10 +32,10 @@ function main(){
         setAction();
         branchAction();
 
-
+        console.log(clients, clientsWeekly);
         setContinueResponse();
     }
-    writeClients();
+    //writeClients();
 }
 main();
 
@@ -35,13 +43,13 @@ main();
 
 function setAction() {
     action = -1;
-    while (action !== 1 && action !== 2 && action !== 3 && action !== 4){
+    console.log(`\x1Bc`);
+    while (action !== 1 && action !== 2 && action !== 3){
         action = Number(PROMPT.question(
             `What would you like to do?
             \t1) Enter services performed for new client
             \t2) Enter services performed for existing client
             \t3) Create weekly report
-            \t4) Remove a client
             \tPlease enter value: `
         ))
     }
@@ -49,14 +57,13 @@ function setAction() {
 
 function branchAction() {
     switch (action) {
-        case 1: addNewClient();
+        case 1: addNewClient(); setService();
+            clientsWeekly[client][totalSpent] = clientsWeekly[client][totalSpent] + servAmount;
             break;
         case 2: listClients(); setClient(); setService();
             clientsWeekly[client][totalSpent] = clientsWeekly[client][totalSpent] + servAmount;
             break;
         case 3: buildReport();
-            break;
-        case 4: listClients(); deleteClient();
             break;
     }
 }
@@ -67,55 +74,28 @@ function buildReport() {
 
 }
 function setClient() {
-    while (!client || client < 0 || client > clients.length - 1) {
-        client = Number(PROMPT.question(`\nPlease enter number of client the service was for: `));
-        if (client < 0 || client > clients.length - 1) {
+    client = -1;
+    while (!client || client < 0 || client > clientsWeekly.length) {
+        client = Number(PROMPT.question(`\nPlease enter clients corresponding number: `));
+        if (client < 0 || client > clientsWeekly.length) {
             console.log(`${client} is invalid. Please try again.`);
         }
-    }
-    return client--;
+    }client--;
 }
 
 function setService() {
     const MIN_ACTION = 1, MAX_ACTION = 6;
-    let moreServe = 1, temp = 0;
     let service;
-    while (service == null || service > MAX_ACTION || service < MIN_ACTION || !/[0-9]/.test(service)) {
-        service = Number(PROMPT.question(
-            `What service was performed?
-             \t1) Hair cut
-             \t2) Shampoo
-             \t3) Manicure
-             \t4) Pedicure
-             \t5) Perm
-             \t6) Massage
-             Enter number of service?`
-            ));
+    console.log(`\x1Bc`);
+    console.log(`What service did ${clientsWeekly[client][firstName]} receive?`);
+    for (let i = 0;i < services.length; i++){
+        console.log(`${i + 1}) ${services[i][0]}`)
+    }while (service == null || service > MAX_ACTION || service < MIN_ACTION || !/[0-9]/.test(service)) {
+        service = Number(PROMPT.question(`What service was performed? `));
         if (service == null || service > MAX_ACTION || service < MIN_ACTION || !/[0-9]/.test(service)) {
                 console.log(`${service} is an incorrect value. Please try again.`)
             }
-        }
-        switch (service) {
-            case 1:
-                servAmount = 50;
-                break;
-            case 2:
-                servAmount = 35;
-                break;
-            case 3:
-                servAmount = 65;
-                break;
-            case 4:
-                servAmount = 75;
-                break;
-            case 5:
-                servAmount = 100;
-                break;
-            case 6:
-                servAmount = 130;
-                break;
-            default: console.log(`! ERROR !`);
-        }
+        }servAmount = services[service-1][1];
         return servAmount;
 }
 
@@ -136,28 +116,15 @@ function addNewClient() {
         if (!/^[a-zA-Z -]{1,30}$/.test(clientsWeekly[i][lastName])) {
             console.log(`${clientsWeekly[i][lastName]} is invalid. Please try again.`);
         }
-    }
-    setService();
-    clientsWeekly[i][totalSpent] = clientsWeekly[i][totalSpent] + servAmount;
-}
-
-function deleteClient() {
-    let del;
-    while (!del || del < 0 || del > clients.length - 1) {
-        del = Number(PROMPT.question(`\nPlease enter number of client to be removed: `));
-        if (del < 0 || del > clients.length - 1) {
-            console.log(`${del} is invalid. Please try again.`);
-        }
-    }
-    clients.splice(del - 1, 1);
+    }client = clientsWeekly.length - 1;
 }
 
 function listClients() {
     console.log(`\x1Bc`);
-    for (let i = 0; i < clients.length; i++) {
+    for (let i = 0; i < clientsWeekly.length; i++) {
         process.stdout.write(`\n${i + 1}) `);
-        for (let j = 1; j < clients[i].length - 1; j++) {
-            process.stdout.write(`${clients[i][j]} `)
+        for (let j = 1; j < clientsWeekly[i].length - 1; j++) {
+            process.stdout.write(`${clientsWeekly[i][j]} `)
         }
     }
 }
@@ -168,13 +135,20 @@ function loadClients() {
     for (let i = 0; i < lines.length; i++) {
         clients.push(lines[i].toString().split(/,/)); // Makes students array MD by pushing data between commas in
     }
-    for (let j = 0; j < clients.length; j++){
+    for (let j = 0; j < clients.length; j++) {
         clients[j][id] = Number(clients[j][id]);
     }
     for (let k = 0; k < clients.length; k++) {
         clients[k][totalSpent] = Number(clients[k][totalSpent]);
     }
-    clientsWeekly = clients.slice()
+    const MAX = 2;
+    for (let l = 0; l < clients.length; l++){
+        clientsWeekly[l] = [];
+        clientsWeekly[l][totalSpent] = 0;
+        for (let m = 0; m <= MAX; m++){
+            clientsWeekly[l][m] = clients[l][m];
+        }
+    }
 }
 
 function writeClients() {
