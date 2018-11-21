@@ -11,7 +11,7 @@ const IO = require('fs');
 const COLUMNS = 5;
 const ID_NUM = 0, FIRST_NAME = 1, LAST_NAME = 2, TOTAL_SPENT = 3, NUM_REWARDS = 4, SERV_PERFOR = 5;
 const services = [];
-services[0] = ["Hair cut",50];
+services[0] = ["Hair cut",500];
 services[1] = ["Shampoo",35];
 services[2] = ["Manicure",65];
 services[3] = ["Pedicure",75];
@@ -49,10 +49,25 @@ function main(){
                 break;
         }setContinueResponse();
     }
+    console.log(clients);
+    console.log(clientsWeekly);
+    PROMPT.question(`enter`);
+
     checkNewData();
+    console.log(clients);
+    console.log(clientsWeekly);
+    PROMPT.question(`enter`);
+
     mergeData();
+    console.log(clients);
+    console.log(clientsWeekly);
+    PROMPT.question(`enter`);
 
     rewardClient();
+    console.log(clients);
+    console.log(clientsWeekly);
+    PROMPT.question(`enter`);
+
     writeClients();
 }
 
@@ -68,12 +83,13 @@ function rewardClient() {
                 clients[i][NUM_REWARDS]++;
                 console.log(`\n`);
                 console.log(`Congratulations ${clients[i][FIRST_NAME]} you have earned your first free hair cut`)
-        }
-            else if ((clients[i][TOTAL_SPENT] > (clients[i][NUM_REWARDS] * AWARD_FOR))){
-                clients[i][NUM_REWARDS]++;
-                console.log(`\n`);
-                console.log(`Congratulations ${clients[i][FIRST_NAME]} you have earned a free hair cut`)
             }
+            else
+                if (clients[i][TOTAL_SPENT] > (clients[i][NUM_REWARDS] * AWARD_FOR)) {
+                    clients[i][NUM_REWARDS]++;
+                    console.log(`\n`);
+                    console.log(`Congratulations ${clients[i][FIRST_NAME]} you have earned a free hair cut`)
+                }
         }
     }
 }
@@ -82,6 +98,9 @@ function mergeData() {
     for (let i = 0; i < clients.length; i++) {
         clients[i][TOTAL_SPENT] = clients[i][TOTAL_SPENT] + clientsWeekly[i][TOTAL_SPENT];
         clients[i][NUM_REWARDS] = clients[i][NUM_REWARDS] + clientsWeekly[i][NUM_REWARDS];
+    }
+    for (let j = 0; j < COLUMNS; j++) {
+        clients[clients.length - 1][j] = clientsWeekly[clients.length - 1][j];
     }
 }
 
@@ -103,14 +122,14 @@ function checkNewData() {
         console.log(`Client #\tTotal paid\tService(s) performed\n========        ==========      ==================`);
         for (let i = 0; i < clientsWeekly.length - clients.length; i++) {
             if (clientsWeekly[i][SERV_PERFOR] === undefined) {
-                    clientsWeekly[i][SERV_PERFOR] = "no service"
-                }
-                process.stdout.write(` ${clientsWeekly[clients.length + i][ID_NUM]}   \t${clientsWeekly[clients.length + i][TOTAL_SPENT]} \t\t${clientsWeekly[clients.length + i][SERV_PERFOR]}\n`);
+                clientsWeekly[i][SERV_PERFOR][0] = "no service"
             }
-        clients.push([]);
-        for (let j = 0; j < COLUMNS; j++) {
-            clients[clients.length - 1][j] = clientsWeekly[clients.length - 1][j];
+            process.stdout.write(` ${clientsWeekly[clients.length][ID_NUM]}   \t${clientsWeekly[clients.length][TOTAL_SPENT]} \t\t${clientsWeekly[clients.length][SERV_PERFOR]}\n`);
+            clients[clients.length] = [];
         }
+
+
+
             PROMPT.question(`Press Enter to continue.`);
     }
 }
@@ -140,8 +159,6 @@ function setService() {
         }
     clientsWeekly[client][TOTAL_SPENT] = clientsWeekly[client][TOTAL_SPENT] + services[service-1][SERVE_VALUE];
     clientsWeekly[client][SERV_PERFOR].push(services[service-1][SERVE_STRING]);
-
-
 }
 
 function addNewClient() {
@@ -191,6 +208,7 @@ function loadClients() {
             clientsWeekly[k][l] = clients[k][l];
         }
         clientsWeekly[k][TOTAL_SPENT] = 0;
+        clientsWeekly[k][NUM_REWARDS] = 0;
         clientsWeekly[k][SERV_PERFOR] = [];
     }
 }
