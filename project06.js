@@ -29,15 +29,16 @@ function main(){
     if (continueResponse !== 0 && continueResponse !== 1) {
         setContinueResponse();
     }
-    while (continueResponse === 1) {
+    console.log(`\x1Bc`);
+    while (continueResponse === 0) {
         let action;
-        console.log(`\x1Bc`);
-        while (action !== 1 && action !== 2 && action !== 3){
+        while (action !== 1 && action !== 2 && action !== 3 && action !== 4){
             action = Number(PROMPT.question(
-                `What would you like to do?
+                `\nWhat would you like to do?
             \t1) Enter services performed for new client
             \t2) Enter services performed for existing client
-            \t3) Create weekly report
+            \t3) View clients weekly services
+            \t4) Update and quit
             \tPlease enter value: `));
         }
         switch (action) {
@@ -47,27 +48,14 @@ function main(){
                 break;
             case 3: buildReport();
                 break;
-        }setContinueResponse();
+            default: continueResponse = 1;
+                break;
+        }
+        setContinueResponse();
     }
-    console.log(clients);
-    console.log(clientsWeekly);
-    PROMPT.question(`enter`);
-
     checkNewData();
-    console.log(clients);
-    console.log(clientsWeekly);
-    PROMPT.question(`enter`);
-
     mergeData();
-    console.log(clients);
-    console.log(clientsWeekly);
-    PROMPT.question(`enter`);
-
     rewardClient();
-    console.log(clients);
-    console.log(clientsWeekly);
-    PROMPT.question(`enter`);
-
     writeClients();
 }
 
@@ -85,7 +73,7 @@ function rewardClient() {
                 console.log(`Congratulations ${clients[i][FIRST_NAME]} you have earned your first free hair cut`)
             }
             else
-                if (clients[i][TOTAL_SPENT] > (clients[i][NUM_REWARDS] * AWARD_FOR)) {
+                if (clients[i][TOTAL_SPENT] > ((clients[i][NUM_REWARDS] + 1) * AWARD_FOR)) {
                     clients[i][NUM_REWARDS]++;
                     console.log(`\n`);
                     console.log(`Congratulations ${clients[i][FIRST_NAME]} you have earned a free hair cut`)
@@ -98,9 +86,11 @@ function mergeData() {
     for (let i = 0; i < clients.length; i++) {
         clients[i][TOTAL_SPENT] = clients[i][TOTAL_SPENT] + clientsWeekly[i][TOTAL_SPENT];
         clients[i][NUM_REWARDS] = clients[i][NUM_REWARDS] + clientsWeekly[i][NUM_REWARDS];
-    }
-    for (let j = 0; j < COLUMNS; j++) {
-        clients[clients.length - 1][j] = clientsWeekly[clients.length - 1][j];
+        if (clients[i][ID_NUM] === undefined){
+            for (let j = 0; j < COLUMNS; j++) {
+                clients[i][j] = clientsWeekly[i][j];
+            }
+        }
     }
 }
 
@@ -120,17 +110,12 @@ function checkNewData() {
         console.log(`     ***Warning!!  New client data detected***`);
         console.log(`The following clients were not listed in original file.`);
         console.log(`Client #\tTotal paid\tService(s) performed\n========        ==========      ==================`);
-        for (let i = 0; i < clientsWeekly.length - clients.length; i++) {
-            if (clientsWeekly[i][SERV_PERFOR] === undefined) {
-                clientsWeekly[i][SERV_PERFOR][0] = "no service"
-            }
+        for (let i = 0; i < clientsWeekly.length - clients.length; /*i++*/) {
             process.stdout.write(` ${clientsWeekly[clients.length][ID_NUM]}   \t${clientsWeekly[clients.length][TOTAL_SPENT]} \t\t${clientsWeekly[clients.length][SERV_PERFOR]}\n`);
             clients[clients.length] = [];
         }
-
-
-
-            PROMPT.question(`Press Enter to continue.`);
+        PROMPT.question(`
+        Press Enter to continue.`);
     }
 }
 
@@ -138,7 +123,7 @@ function setClient() {
     client = -1;
     while (!client || client < 0 || client > clientsWeekly.length) {
         client = Number(PROMPT.question(`\nPlease enter clients corresponding number: `));
-        if (client < 0 || client > clientsWeekly.length) {
+        if (client < 1 || client > clientsWeekly.length) {
             console.log(`${client} is invalid. Please try again.`);
         }
     }client--;
@@ -152,13 +137,14 @@ function setService() {
     for (let i = 0;i < services.length; i++){
         console.log(`${i + 1}) ${services[i][0]}`)
     }while (service == null || service > MAX_ACTION || service < MIN_ACTION || !/[0-9]/.test(service)) {
-        service = Number(PROMPT.question(`What service was performed? `));
+        service = Number(PROMPT.question(`Enter service performed: `));
         if (service == null || service > MAX_ACTION || service < MIN_ACTION || !/[0-9]/.test(service)) {
                 console.log(`${service} is an incorrect value. Please try again.`)
             }
         }
     clientsWeekly[client][TOTAL_SPENT] = clientsWeekly[client][TOTAL_SPENT] + services[service-1][SERVE_VALUE];
     clientsWeekly[client][SERV_PERFOR].push(services[service-1][SERVE_STRING]);
+    console.log(`\nThank you, ${services[service-1][SERVE_STRING]} has been added to ${clientsWeekly[client][FIRST_NAME]}'s weekly services.`)
 }
 
 function addNewClient() {
@@ -195,7 +181,7 @@ function loadClients() {
     let clientsFile = IO.readFileSync(`data/cudbs_data.csv`, 'utf8');
     let lines = clientsFile.toString().split(/\r?\n/); // Automatically creates SD array on newlines
     for (let i = 0; i < lines.length; i++) {
-        clients.push(lines[i].toString().split(/,/)); // Makes students array MD by pushing data between commas in
+        clients.push(lines[i].toString().split(/,/)); // Makes array MD by pushing data between commas
     }
     for (let j = 0; j < clients.length; j++) {
         clients[j][ID_NUM] = Number(clients[j][ID_NUM]);
@@ -229,15 +215,17 @@ function writeClients() {
     }
     IO.unlinkSync(`data/cudbs_data.csv`);//deletes file
     IO.renameSync(`data/dataX.csv`, `data/cudbs_data.csv`);//renames new file with old name
+    console.log(`\n
+    \nThank you, all files have been updated.`)
 }
 
 function setContinueResponse() {
     if (continueResponse) {
         continueResponse = -1;
         while (continueResponse !== 0 && continueResponse !== 1) {
-            continueResponse = Number(PROMPT.question(`\nDo you want to continue? [0=no, 1=yes]: `));
+            continueResponse = Number(PROMPT.question(`\nAre you sure you want to quit? [0=no, 1=yes]: `));
         }
     } else {
-        continueResponse = 1;
+        continueResponse = 0;
     }
 }
